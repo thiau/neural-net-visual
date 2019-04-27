@@ -1,9 +1,9 @@
 import logging
-import app.helpers.dataset as ds
-import app.helpers.tensor as ts
-from app.helpers.encoder import Encoder
-from app.helpers.text_process import TextProcessor
-from app.network.classifier import Classifier
-from app.network.training import train_nn
+from flask import Flask, request, jsonify, render_template
+from flask_socketio import SocketIO, send, emit
 
 logging.basicConfig(level=logging.INFO)
+app = Flask(__name__, template_folder="../client", static_folder="../client")
+
+app.config['SECRET_KEY'] = 'nn-visual!'
+socketio = SocketIO(app)
