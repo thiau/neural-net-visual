@@ -1,17 +1,16 @@
 <template>
 	<div id="app">
-		<!-- <chart :chartData="chartData" :options="options"></chart> -->
 		<GChart
 			type="LineChart"
-			:data="chartData"
-			:options="chartOptions"
+			:data="lossChart.data"
+			:options="lossChart.options"
 			class="chart"
 		/>
 
 		<GChart
 			type="LineChart"
-			:data="accData"
-			:options="accOptions"
+			:data="accuracyChart.data"
+			:options="accuracyChart.options"
 			class="chart"
 		/>
 	</div>
@@ -21,40 +20,37 @@
 (function() {
   "use strict";
 
-  //   let chart = require("vue-chartjs").VueCharts;
-  let GChart = require("vue-google-charts").GChart;
-
   module.exports = {
     data: function() {
       return {
-        accData: [["Epoch", "Accuracy"], ["0", 0.5]],
-        accOptions: {
-          vAxis: {
-            title: "Accuracy",
-            viewWindow: {
-              min: 0.4,
-              max: 1
-            },
-            hAxis: {
-              title: "Epochs"
+        lossChart: {
+          data: [["Epoch", "Error"], ["0", 0.7]],
+          options: {
+            vAxis: {
+              title: "Loss",
+              viewWindow: {
+                min: 0.2,
+                max: 0.7
+              },
+              hAxis: {
+                title: "Epochs"
+              }
             }
           }
         },
-        chartData: [["Epoch", "Error"], ["0", 0.7]],
-        chartOptions: {
-          vAxis: {
-            title: "Loss",
-            viewWindow: {
-              min: 0.2,
-              max: 0.7
-            },
-            hAxis: {
-              title: "Epochs"
+        accuracyChart: {
+          data: [["Epoch", "Accuracy"], ["0", 0.5]],
+          options: {
+            vAxis: {
+              title: "Accuracy",
+              viewWindow: {
+                min: 0.4,
+                max: 1
+              },
+              hAxis: {
+                title: "Epochs"
+              }
             }
-          },
-          chart: {
-            title: "Company Performance",
-            subtitle: "Sales, Expenses, and Profit: 2014-2017"
           }
         }
       };
@@ -62,17 +58,14 @@
     socket: {
       namespace: "/chat",
       events: {
-        test: function(data) {
-          console.log(data);
-          //   this.trenddata.push(data);
-          this.chartData.push([data.epoch, data.loss]);
-          this.accData.push([data.epoch, data.accuracy]);
+        trainingInfo: function(data) {
+          this.lossChart.data.push([data.epoch, data.loss]);
+          this.accuracyChart.data.push([data.epoch, data.accuracy]);
         }
       }
     },
     components: {
-      //   trend: require("vuetrend"),
-      GChart
+      GChart: require("vue-google-charts").GChart
     },
     methods: {},
     computed: {},

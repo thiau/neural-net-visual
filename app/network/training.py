@@ -13,7 +13,7 @@ def train_nn(model, input_data, labels, criterion, optimizer, epochs=5000):
         # logging.info("Epoch %s Error: %f", e, loss)
         # logging.info("Accuracy: %f", accuracy)
         socketio.emit(
-            'test', {
+            'trainingInfo', {
                 "epoch": e,
                 "accuracy": accuracy,
                 "loss": loss.item()
