@@ -18,7 +18,7 @@ def train_nn(model, input_data, labels, criterion, optimizer, epochs=5000):
                 "accuracy": accuracy,
                 "loss": loss.item()
             },
-            namespace="/chat")
+            namespace="/training")
         losses.append(loss.item())
         optimizer.zero_grad()
         loss.backward()

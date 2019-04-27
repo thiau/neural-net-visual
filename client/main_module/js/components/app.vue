@@ -56,7 +56,7 @@
       };
     },
     socket: {
-      namespace: "/chat",
+      namespace: "/training",
       events: {
         trainingInfo: function(data) {
           this.lossChart.data.push([data.epoch, data.loss]);
