@@ -1,6 +1,8 @@
-from app import app, render_template, send, emit, socketio
-from app.factory.nn import pre_process_and_train_network
+from app import app, render_template, send, emit, socketio, request
+from app.factory.nn import NeuralNetClassifier
 import time
+
+model = NeuralNetClassifier()
 
 
 @app.route("/", methods=["GET"])
@@ -9,6 +11,14 @@ def main():
 
 
 @app.route("/train", methods=["GET"])
-def train():
-    pre_process_and_train_network()
-    return "Neural Net Training Started"
+def train_route():
+    model.pre_process()
+    model.train()
+    return "Neural Net Training Finished"
+
+
+@app.route("/predict", methods=["GET"])
+def predict_route():
+    text = request.args.get("text")
+    print(model.predict(text))
+    return "done"

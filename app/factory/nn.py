@@ -10,45 +10,55 @@ from app.network.classifier import Classifier
 from app.network.training import train_nn
 
 
-def pre_process_and_train_network():
+class NeuralNetClassifier():
+    def __init__(self):
+        self.count_encoder = Encoder("count", min_df=0.001)
+        self.tfidf_encoder = Encoder("tfidf")
+        self.model = None
+        self.tensor_variables = None
+        self.tensor_labels = None
+        self.nb_classes = None
+        self.input_size = None
+        self.dataset = ds.load_pandas_dataset(
+            file_name="Sarcasm_Headlines_Dataset")
 
-    # Load Pandas Dataset
-    dataset = ds.load_pandas_dataset(file_name="Sarcasm_Headlines_Dataset")
+    def pre_process(self):
+        text_processor = TextProcessor(sentences=self.dataset["headline"])
+        text_processor.process_text()
+        corpus = text_processor.get_corpus()
 
-    # Text Pre Processing
-    text_processor = TextProcessor(sentences=dataset["headline"])
-    text_processor.process_text()
-    corpus = text_processor.get_corpus()
+        count_vars = self.count_encoder.encode(corpus)
+        variables = self.tfidf_encoder.encode(count_vars)
+        labels = self.dataset["is_sarcastic"].values
 
-    # Create Text Encoders
-    count_encoder = Encoder("count", min_df=0.001)
-    tfidf_encoder = Encoder("tfidf")
+        self.tensor_variables = ts.create_float_scaled_tensor(
+            variables.toarray())
+        self.tensor_labels = ts.create_regular_tensor(labels)
 
-    # Encode Variables
-    count_vars = count_encoder.encode(corpus)
-    variables = tfidf_encoder.encode(count_vars)
+    def train(self):
+        nb_classes = 2
+        input_size = len(self.tensor_variables[0])
+        self.model = Classifier(input_size, nb_classes)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(self.model.parameters(), lr=0.0001)
 
-    # Assingn Labels to variable
-    labels = dataset["is_sarcastic"].values
+        train_nn(
+            self.model,
+            self.tensor_variables,
+            self.tensor_labels,
+            criterion,
+            optimizer,
+            epochs=300)
 
-    # Create Tensor from Variables
-    X = ts.create_float_scaled_tensor(variables.toarray())
-    y = ts.create_regular_tensor(labels)
+    def predict(self, text):
+        text = [text]
+        count_vars = self.count_encoder.transform(text)
+        variables = self.tfidf_encoder.transform(count_vars)
 
-    # Define Neural Net Basic Parameters
-    nb_classes = 2
-    input_size = len(X[0])
+        tensor_variables = ts.create_float_scaled_tensor(variables.toarray())
+        return self.model.predict(tensor_variables)
 
-    # Create Neural Net Classifier
-    model = Classifier(input_size, nb_classes)
-
-    # Define Training Parameters
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
-
-    # Train the Neural Net
-    train_nn(model, X, y, criterion, optimizer, epochs=300)
-
-    # Compute Accuracy
-    accuracy = accuracy_score(model.predict(X), y)
-    logging.info("Accuracy is: %s", accuracy)
+    def get_accuracy(self):
+        accuracy = accuracy_score(
+            self.model.predict(self.tensor_variables), self.tensor_labels)
+        return accuracy
